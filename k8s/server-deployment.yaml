@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server-deployment
+spec:
+  # We are going to have 3 pods running the specified images below
+  replicas: 3
+  selector:
+    matchLabels:
+      component: server
+  template:
+    metadata:
+      # At least one label that we put here must match up the label defined in the selector
+      labels:
+        component: server
+    spec:
+      containers:
+        - name: server
+          image: alejotem11/multi-server
+          ports:
+            - containerPort: 5000
+          env:
+            # The shortfall of Docker and Kubernetes environment variables is that they are tied to the container or deployment. If you want to change them, you have to rebuild the container or modify the deployment. Even worse, if you want to use the variable with multiple containers or deployments, you have to duplicate the data!:
+            # K8s environment variable:
+            # - name: REDIS_HOST
+            #   value: redis-cluster-ip-service
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: config-map-env
+                  key: REDIS_HOST
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: config-map-env
+                  key: REDIS_PORT
+            - name: PGUSER
+              valueFrom:
+                configMapKeyRef:
+                  name: config-map-env
+                  key: PGUSER
+            - name: PGHOST
+              valueFrom:
+                configMapKeyRef:
+                  name: config-map-env
+                  key: PGHOST
+            - name: PGPORT
+              valueFrom:
+                configMapKeyRef:
+                  name: config-map-env
+                  key: PGPORT
+            - name: PGDATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: config-map-env
+                  key: PGDATABASE
+            # Secret object as environment variable. First you must run the command:
+            # kubectl create secret generic pspassword --from-literal PGPASSWORD=xxxxxx
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pgpassword
+                  # The key could be anything passed in the imperative command. It doesn't have to be the exact same value put in the name of the environment variable. e.g:
+                  # key: MYPASSWORD
+                  key: PGPASSWORD

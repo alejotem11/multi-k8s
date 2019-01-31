@@ -1,0 +1,19 @@
+apiVersion: v1
+# PersistentVolumeClaim is not an actual instance storage
+# If we attach this claim to a pod, kubernetes must find an instance of storage (like a slice of your hard drive) that meets the requirements defined by the claim
+kind: PersistentVolumeClaim
+metadata:
+  name: database-persistent-volume-claim
+spec:
+  # Access Modes: If the claim is attached to a pod, Kubernetes have to define an instance storage that supports the access mode defined here
+  # - ReadWriteOnce: Can be used by a single node
+  # - ReadOnlyMany: Multiple nodes can read from the persistent volume
+  # - ReadWriteMany: Can be read and written to by many nodes
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  # use the storageClassName to specify the way that Kubernetes is going to create a persistent volume. If you don't specify it, k8s is going to use the storageclass marked as default. To see the different options available in the terminal type the command: kubectl get storageclass
+  # The standard option on your local computer is going to be minikube-hostpath (which is going to take a slice of your hard drive), but in the cloud the standard changes depending on the cloud provider (AWS, Google Cloud, etc)
+  # storageClassName: XXXXX

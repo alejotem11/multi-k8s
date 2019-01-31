@@ -1,0 +1,24 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-service
+  # annotations are additional configuration options that specify high level configuration around the ingress object that gets created
+  annotations:
+    # Telling k8s that we want to create an ingress controller based on the nginx project:
+    kubernetes.io/ingress.class: nginx
+    # How our copy of nginx behaves. This is going to send the request with no additional path after the /, e.g. the incoming req is /api, the req sent to the service would be /
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - http:
+        paths:
+          # Routing any request besides /api/ to whatever set of pods that are governed by the client-cluster-ip-service
+          - path: /
+            backend:
+              serviceName: client-cluster-ip-service
+              servicePort: 3000
+          # Routing any request with a leading route name of /api/ to the set of pods that are governed by the server-cluster-ip-service
+          - path: /api/
+            backend:
+              serviceName: server-cluster-ip-service
+              servicePort: 5000

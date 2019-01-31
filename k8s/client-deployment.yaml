@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client-deployment
+spec:
+  # We are going to have 3 pods running the specified images below
+  replicas: 3
+  # Indicates the pods that are going to be handle by this deployment. In this case those who have the metadata.label key pair [component: web]
+  selector:
+    matchLabels:
+      component: web
+  template:
+    metadata:
+      # At least one label that we put here must match up the label defined in the selector
+      labels:
+        component: web
+    spec:
+      containers:
+        - name: client
+          image: alejotem11/multi-client
+          ports:
+            - containerPort: 3000
+# A single file could hold different configurations, you just have to put a --- between configurations. So for example, if we wanted to define the ClusterIP here we would do:
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: client-cluster-ip-service
+# spec:
+#   type: ClusterIP
+#   selector:
+#     component: web
+#   ports:
+#     - port: 3000
+#       targetPort: 3000

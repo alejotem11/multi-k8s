@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-map-env
+data:
+  REDIS_HOST: redis-cluster-ip-service
+  REDIS_PORT: '6379'
+  # Not the best practice to use the default user "postgres". The user could be stored in a secret object
+  PGUSER: postgres
+  PGHOST: postgres-cluster-ip-service
+  PGPORT: '5432'
+  # Not the best practice to use the default db "postgres". The db could be stored in a secret object
+  PGDATABASE: postgres

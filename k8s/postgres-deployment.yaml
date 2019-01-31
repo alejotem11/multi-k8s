@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: postgres
+  template:
+    metadata:
+      labels:
+        component: postgres
+    spec:
+      # Allocate the kind of storage defined in the claim
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: database-persistent-volume-claim
+      containers:
+        - name: postgres
+          image: postgres
+          ports:
+            - containerPort: 5432
+          # Assign for use the allocated storage in the section "volumes" to the containers
+          volumeMounts:
+              # Notice the volumes.name is equal to the volumeMounts.name
+            - name: postgres-storage
+              # Designating where inside the container this storage should be available
+              mountPath: /var/lib/postgresql/data
+              # Any data inside the container that is stored inside of the mount path is nested inside of a folder called postrgres inside the persistent volume
+              subPath: postgres
+          env:
+            # Secret object as environment variable. First you must run the command:
+            # kubectl create secret generic pspassword --from-literal PGPASSWORD=xxxxxx
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pgpassword
+                  # The key could be anything passed in the imperative command. It doesn't have to be the exact same value put in the name of the environment variable. e.g:
+                  # key: MYPASSWORD
+                  key: PGPASSWORD
