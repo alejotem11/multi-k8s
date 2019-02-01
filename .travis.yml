@@ -1,11 +1,46 @@
 sudo: required
 services:
   - docker
+env:
+  global:
+    # Used in the "deploy.sh" script
+    - SHA=$(git rev-parse HEAD)
+    # Configure Google Cloud CLI (gcloud) to not try to display any prompts that require user input, because we don't have the ability to respond to that in the Travis environment
+    - CLOUDSDK_CORE_DISABLE_PROMPTS=1
 before_install:
+  # **** CONFIGURING GOOGLE CLOUD SDK CLI (gcloud) **** #
+  # Configure the SDK with our Google Cloud auth info:
+  # First you should create a service account (IAM & admin) with the apropriate pesmissions to make sure travis can deploy to your k8s cluster on Google Cloud
   # The result of running $ travis encrypt-file service-account.json -r alejotem11/multi-k8s. Check the encrypt-file-ruby-docker.txt file
   - openssl aes-256-cbc -K $encrypted_0c35eebf403c_key -iv $encrypted_0c35eebf403c_iv -in service-account.json.enc -out service-account.json -d
-  # **** Install Google Cloud SDK CLI **** #
+  # The next 2 commands install GC SDK CLI
   - curl https://sdk.cloud.google.com | bash > /dev/null;
   - source $HOME/google-cloud-sdk/path.bash.inc
+  # Setting Google cloud to be in charge of the kubectl command inside of this Travis environment
   - gcloud components update kubectl
+  # Using the decrypted file result of the execution of the first command (openssl aes-256-cbc ....)
   - gcloud auth activate-service-account --key-file service-account.json
+  # Telling Google Cloud which project we want to work on
+  - gcloud config set project multi-k8s-230320
+  # Specify the compute zone of the k8s cluster
+  - gcloud config set compute/zone us-central1-a
+  # Which cluster we are going to use when we issue any k8s command (kubectl)
+  - gcloud container clusters get-credentials multi-cluster
+  # *************************************** #
+  # You must set up the environment variables DOCKER_PASSWORD and DOCKER_USERNAME on travis
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  # We build our development version because it has all the dependencies required to run our tests
+  - docker build -t alejotem11/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  # Run the tests with the [-- --coverage] at the end because by default the npm test is going to enter a watch mode that's neve going to exit and it will not allow Travis to actually get any feedback from the test
+  - docker run alejotem11/react-test npm test -- --coverage
+
+deploy:
+  # There is no built-in providers for k8s, unlike the elasticbeanstalk provider that we used in the complex-elastic-beanstalk project
+  provider: script
+  # Command to be executed by Travis
+  script: bash ./deploy.sh
+  on:
+    # The deploy script "deploy.sh" is going to be executed only when we push something to the master branch on the github repo
+    branch: master
