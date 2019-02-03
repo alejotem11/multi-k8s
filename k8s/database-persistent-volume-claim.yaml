@@ -13,7 +13,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 1Gi
+      storage: 2Gi
   # use the storageClassName to specify the way that Kubernetes is going to create a persistent volume. If you don't specify it, k8s is going to use the storageclass marked as default. To see the different options available in the terminal type the command: kubectl get storageclass
   # The standard option on your local computer is going to be minikube-hostpath (which is going to take a slice of your hard drive), but in the cloud the standard changes depending on the cloud provider (AWS, Google Cloud, etc)
   # storageClassName: XXXXX
