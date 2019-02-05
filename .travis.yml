@@ -10,7 +10,7 @@ env:
 before_install:
   # **** CONFIGURING GOOGLE CLOUD SDK CLI (gcloud) **** #
   # Configure the SDK with our Google Cloud auth info:
-  # First you should create a service account (IAM & admin) with the apropriate pesmissions to make sure travis can deploy to your k8s cluster on Google Cloud
+  # First you should create a service account (IAM & admin) with the apropriate pesmissions (Kubernetes Engine Admin) to make sure travis can deploy to your k8s cluster on Google Cloud
   # The result of running $ travis encrypt-file service-account.json -r alejotem11/multi-k8s. Check the encrypt-file-ruby-docker.txt file
   - openssl aes-256-cbc -K $encrypted_0c35eebf403c_key -iv $encrypted_0c35eebf403c_iv -in service-account.json.enc -out service-account.json -d
   # The next 2 commands install GC SDK CLI
